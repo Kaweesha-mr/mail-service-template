@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const config = require("../config");
 const { google } = require("googleapis");
 const logger = require("../utils/logger");
+const fs = require("fs");
 
 // Initialize OAuth2 client
 const oAuth2Client = new google.auth.OAuth2(
@@ -52,23 +53,24 @@ const sendEmail = async (to, subject, html) => {
   }
 };
 
-//function to send email with attactment
-const sendEmailWithAttachment = async (to, subject, html, attachmentPath) => {
+const sendEmailWithAttachments = async (to, subject, html, attachmentPaths) => {
   try {
     const transporter = await createTransporter();
+
+    // Convert the comma-separated file paths into an array of attachment objects
+    const attachments = attachmentPaths.split(",").map((path, index) => ({
+      filename: `attachment-${index + 1}.pdf`, // Adjust filename logic if needed
+      content: fs.createReadStream(path.trim()), // Trim to handle extra spaces
+    }));
+
     const mailOptions = {
       from: config.defaultSender,
       to,
       subject,
       html,
-      attachments: [
-        {
-          filename: "1.pdf",
-          path: attachmentPath,
-          contentType: "application/pdf",
-        },
-      ],
+      attachments,
     };
+
     const info = await transporter.sendMail(mailOptions);
     logger.info(`Email sent to ${to} with subject "${subject}"`);
     return info;
@@ -79,4 +81,5 @@ const sendEmailWithAttachment = async (to, subject, html, attachmentPath) => {
   }
 };
 
-module.exports = { sendEmail, sendEmailWithAttachment };
+
+module.exports = { sendEmail, sendEmailWithAttachments };
