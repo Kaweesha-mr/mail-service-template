@@ -1,32 +1,56 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const { google } = require('googleapis');
 const logger = require('../utils/logger');
 
-// Create Nodemailer transporter
-const transporter = nodemailer.createTransport({
-    host: config.smtp.host,
-    port: config.smtp.port,
-    auth: {
-      user: config.smtp.user,
-      pass: config.smtp.pass,
-    },
-  });
+// Initialize OAuth2 client
+const oAuth2Client = new google.auth.OAuth2(
+  config.oAuth.clientId,
+  config.oAuth.clientSecret,
+  config.oAuth.redirectUrl
+);
+oAuth2Client.setCredentials({ refresh_token: config.oAuth.refreshToken });
 
-
-const sendEmail = async (to,subject,html) => {
-    try{
-        const info = await transporter.sendMail({
-            from: config.defaultSender,
-            to,
-            subject,
-            html,
-        });
-        logger.info(`Sending email to ${to} with subject "${subject}"`);  // Log the email being sent
-        return info;
-    }catch(error) {
-        logger.error(`Error sending email: ${error.message}`);  // Log the error
-        throw new Error('Error sending email');
-    }
+// Function to create Nodemailer transporter
+const createTransporter = async () => {
+  try {
+    const accessToken = await oAuth2Client.getAccessToken();
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: config.smtp.user,
+        clientId: config.oAuth.clientId,
+        clientSecret: config.oAuth.clientSecret,
+        refreshToken: config.oAuth.refreshToken,
+        accessToken: accessToken.token,
+      },
+    });
+  } catch (error) {
+    //display actual error
+    console.log(error);
+  }
 };
 
-module.exports = {sendEmail};
+
+// Function to send email
+const sendEmail = async (to, subject, html) => {
+  try {
+    const transporter = await createTransporter(); // Ensure fresh transporter for every email
+    const info = await transporter.sendMail({
+      from: config.defaultSender,
+      to,
+      subject,
+      html,
+    });
+
+    logger.info(`Email sent to ${to} with subject "${subject}"`);
+    return info;
+  } catch (error) {
+    logger.error(`Error sending email to ${to}: ${error.message}`);
+    console.log(error);
+    throw new Error('Error sending email');
+  }
+};
+
+module.exports = { sendEmail };
