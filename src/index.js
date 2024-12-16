@@ -1,5 +1,6 @@
 const express =  require('express');
 const emailRoutes = require('./routes/email.routes')
+const logger = require('./utils/logger');
 require('dotenv').config();
 
 const app = express();
@@ -15,5 +16,5 @@ app.get('/', (req, res) => {
 
 
 app.listen(PORT, () => {
-    console.log(`Server is running on PORT ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
 });
