@@ -40,9 +40,9 @@ PORT=3000
 
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=kaweesha.mr@gmail.com
+SMTP_USER=example@gmail.com
 SMTP_PASS=your-smtp-password
-DEFAULT_SENDER=kaweesha.mr@gmail.com
+DEFAULT_SENDER=example@gmail.com
 
 NODE_ENV=production
 
