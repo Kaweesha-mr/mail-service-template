@@ -14,7 +14,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "googleapis": "^144.0.0",
+    "mjml": "^4.15.3",
     "nodemailer": "^6.9.16",
+    "nodemailer-express-handlebars": "^7.0.0",
     "winston": "^3.17.0"
   }
 }

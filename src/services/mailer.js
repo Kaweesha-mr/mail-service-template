@@ -3,6 +3,8 @@ const config = require("../config");
 const { google } = require("googleapis");
 const logger = require("../utils/logger");
 const fs = require("fs");
+const path = require("path");
+const mjml = require('mjml');
 
 // Initialize OAuth2 client
 const oAuth2Client = new google.auth.OAuth2(
@@ -16,7 +18,7 @@ oAuth2Client.setCredentials({ refresh_token: config.oAuth.refreshToken });
 const createTransporter = async () => {
   try {
     const accessToken = await oAuth2Client.getAccessToken();
-    return nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         type: "OAuth2",
@@ -27,9 +29,27 @@ const createTransporter = async () => {
         accessToken: accessToken.token,
       },
     });
+
+    // Dynamically import nodemailer-express-handlebars
+    const nodemailerExpressHandlebars = await import("nodemailer-express-handlebars");
+
+    // Use handlebars for templating
+    transporter.use(
+      "compile",
+      nodemailerExpressHandlebars.default({
+        viewEngine: {
+          extname: ".hbs", // Template extension
+          partialsDir: path.resolve("./src/templates"), // Path to your templates folder
+          defaultLayout: false, // Disable layout support
+        },
+        viewPath: path.resolve("./src/templates"), // Correct path to the templates folder
+      })
+    );
+
+    return transporter;
   } catch (error) {
-    //display actual error
     console.log(error);
+    throw new Error("Error creating transporter");
   }
 };
 
@@ -81,5 +101,31 @@ const sendEmailWithAttachments = async (to, subject, html, attachmentPaths) => {
   }
 };
 
+const sendGreetingEmail = async (to, name) => {
+  try {
+    const transporter = await createTransporter();
+    const companyLogo = process.env.COMPANY_LOGO || "https://via.placeholder.com/150";
 
-module.exports = { sendEmail, sendEmailWithAttachments };
+    // Read and compile the MJML template
+    const mjmlTemplate = fs.readFileSync(path.resolve('./src/templates/greetings.hbs'), 'utf-8');
+    const htmlOutput = mjml(mjmlTemplate).html;  // Convert MJML to HTML
+
+    // Send email using the compiled HTML
+    const mailOptions = {
+      from: config.defaultSender,
+      to,
+      subject: "Welcome to our platform",
+      html: htmlOutput,  // Use compiled HTML
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    logger.info(`Greeting email sent to ${to} with subject "${mailOptions.subject}"`);
+    return info;
+  } catch (error) {
+    logger.error(`Error sending email to ${to}: ${error.message}`);
+    console.log(error);
+    throw new Error("Error sending email");
+  }
+};
+
+module.exports = { sendEmail, sendEmailWithAttachments, sendGreetingEmail };
