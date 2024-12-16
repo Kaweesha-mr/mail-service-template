@@ -1,7 +1,7 @@
-const nodemailer = require('nodemailer');
-const config = require('../config');
-const { google } = require('googleapis');
-const logger = require('../utils/logger');
+const nodemailer = require("nodemailer");
+const config = require("../config");
+const { google } = require("googleapis");
+const logger = require("../utils/logger");
 
 // Initialize OAuth2 client
 const oAuth2Client = new google.auth.OAuth2(
@@ -16,9 +16,9 @@ const createTransporter = async () => {
   try {
     const accessToken = await oAuth2Client.getAccessToken();
     return nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        type: 'OAuth2',
+        type: "OAuth2",
         user: config.smtp.user,
         clientId: config.oAuth.clientId,
         clientSecret: config.oAuth.clientSecret,
@@ -31,7 +31,6 @@ const createTransporter = async () => {
     console.log(error);
   }
 };
-
 
 // Function to send email
 const sendEmail = async (to, subject, html) => {
@@ -49,8 +48,35 @@ const sendEmail = async (to, subject, html) => {
   } catch (error) {
     logger.error(`Error sending email to ${to}: ${error.message}`);
     console.log(error);
-    throw new Error('Error sending email');
+    throw new Error("Error sending email");
   }
 };
 
-module.exports = { sendEmail };
+//function to send email with attactment
+const sendEmailWithAttachment = async (to, subject, html, attachmentPath) => {
+  try {
+    const transporter = await createTransporter();
+    const mailOptions = {
+      from: config.defaultSender,
+      to,
+      subject,
+      html,
+      attachments: [
+        {
+          filename: "1.pdf",
+          path: attachmentPath,
+          contentType: "application/pdf",
+        },
+      ],
+    };
+    const info = await transporter.sendMail(mailOptions);
+    logger.info(`Email sent to ${to} with subject "${subject}"`);
+    return info;
+  } catch (error) {
+    logger.error(`Error sending email to ${to}: ${error.message}`);
+    console.log(error);
+    throw new Error("Error sending email");
+  }
+};
+
+module.exports = { sendEmail, sendEmailWithAttachment };
