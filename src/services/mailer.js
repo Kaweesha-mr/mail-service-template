@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const logger = require('../utils/logger');
 
 // Create Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -20,10 +21,10 @@ const sendEmail = async (to,subject,html) => {
             subject,
             html,
         });
-        console.log(`Message sent: ${info.messageId}`);
+        logger.info(`Sending email to ${to} with subject "${subject}"`);  // Log the email being sent
         return info;
     }catch(error) {
-        console.error(`Error: ${error.message}`);
+        logger.error(`Error sending email: ${error.message}`);  // Log the error
         throw new Error('Error sending email');
     }
 };
