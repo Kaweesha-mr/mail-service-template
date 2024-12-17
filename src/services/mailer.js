@@ -104,18 +104,28 @@ const sendEmailWithAttachments = async (to, subject, html, attachmentPaths) => {
 const sendGreetingEmail = async (to, name) => {
   try {
     const transporter = await createTransporter();
-    const companyLogo = process.env.COMPANY_LOGO || "https://via.placeholder.com/150";
+    const companyLogo = "https://upload.wikimedia.org/wikipedia/commons/a/a0/New_Logo_of_SLIIT.png";
 
-    // Read and compile the MJML template
-    const mjmlTemplate = fs.readFileSync(path.resolve('./src/templates/greetings.hbs'), 'utf-8');
-    const htmlOutput = mjml(mjmlTemplate).html;  // Convert MJML to HTML
+    const mjmlTemplatePath = path.resolve('./src/templates/greetings.mjml');
+    const mjmlTemplate = fs.readFileSync(mjmlTemplatePath, 'utf-8');
 
-    // Send email using the compiled HTML
+  
+    const compiledMjmlTemplate = mjmlTemplate
+      .replace('{{companyLogo}}', companyLogo)
+      .replace('{{name}}', name);
+
+
+    const { html, errors } = mjml(compiledMjmlTemplate);
+    if (errors && errors.length) {
+      throw new Error(`MJML compilation error: ${errors[0].message}`);
+    }
+
+
     const mailOptions = {
       from: config.defaultSender,
       to,
       subject: "Welcome to our platform",
-      html: htmlOutput,  // Use compiled HTML
+      html: html, 
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -127,5 +137,6 @@ const sendGreetingEmail = async (to, name) => {
     throw new Error("Error sending email");
   }
 };
+
 
 module.exports = { sendEmail, sendEmailWithAttachments, sendGreetingEmail };
