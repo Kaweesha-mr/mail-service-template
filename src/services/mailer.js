@@ -104,7 +104,7 @@ const sendEmailWithAttachments = async (to, subject, html, attachmentPaths) => {
 const sendGreetingEmail = async (to, name) => {
   try {
     const transporter = await createTransporter();
-    const companyLogo = "https://upload.wikimedia.org/wikipedia/commons/a/a0/New_Logo_of_SLIIT.png";
+    const companyLogo = process.env.COMPANY_LOGO;
 
     const mjmlTemplatePath = path.resolve('./src/templates/greetings.mjml');
     const mjmlTemplate = fs.readFileSync(mjmlTemplatePath, 'utf-8');
@@ -139,4 +139,76 @@ const sendGreetingEmail = async (to, name) => {
 };
 
 
-module.exports = { sendEmail, sendEmailWithAttachments, sendGreetingEmail };
+const sendActivationEmail = async (to, name, activationLink) => {
+  try {
+    const transporter = await createTransporter();
+    const companyLogo = process.env.COMPANY_LOGO || "https://via.placeholder.com/150";
+
+    // Read the MJML template
+    const mjmlTemplate = fs.readFileSync(path.resolve('./src/templates/activateAccount.mjml'), 'utf-8');
+
+    // Inject dynamic data
+    const compiledTemplate = mjmlTemplate
+      .replace('{{companyLogo}}', companyLogo)
+      .replace('{{name}}', name)
+      .replace('{{activationLink}}', activationLink)
+      .replace('{{unsubscribeLink}}', 'https://your-website.com/unsubscribe');
+
+    // Convert MJML to HTML
+    const { html } = mjml(compiledTemplate);
+
+    // Mail options
+    const mailOptions = {
+      from: config.defaultSender,
+      to,
+      subject: "Activate Your Account",
+      html: html,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Activation email sent to ${to}`);
+    return info;
+  } catch (error) {
+    console.error(`Error sending activation email: ${error.message}`);
+    throw new Error("Error sending email");
+  }
+};
+
+
+const sendResetPasswordEmail = async (to, name, resetLink) => {
+  try {
+    const transporter = await createTransporter();
+    const companyLogo = process.env.COMPANY_LOGO || "https://via.placeholder.com/150";
+
+    // Read the MJML template
+    const mjmlTemplate = fs.readFileSync(path.resolve('./src/templates/resetPassword.mjml'), 'utf-8');
+
+    // Inject dynamic data
+    const compiledTemplate = mjmlTemplate
+      .replace('{{companyLogo}}', companyLogo)
+      .replace('{{name}}', name)
+      .replace('{{resetLink}}', resetLink)
+      .replace('{{unsubscribeLink}}', 'https://your-website.com/unsubscribe');
+
+    // Convert MJML to HTML
+    const { html } = mjml(compiledTemplate);
+
+    // Mail options
+    const mailOptions = {
+      from: config.defaultSender,
+      to,
+      subject: "Password Reset Request",
+      html: html,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Password reset email sent to ${to}`);
+    return info;
+  } catch (error) {
+    console.error(`Error sending password reset email: ${error.message}`);
+    throw new Error("Error sending email");
+  }
+};
+
+
+module.exports = { sendEmail, sendEmailWithAttachments, sendGreetingEmail,sendResetPasswordEmail,sendActivationEmail };

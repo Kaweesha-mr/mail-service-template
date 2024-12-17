@@ -1,0 +1,44 @@
+<mjml>
+    <mj-body background-color="#f5f5f5">
+      <!-- Header Section -->
+      <mj-section background-color="#ffffff" padding="20px 0">
+        <mj-column>
+          <mj-image src="{{companyLogo}}" alt="Company Logo" width="150px" />
+        </mj-column>
+      </mj-section>
+  
+      <!-- Main Content Section -->
+      <mj-section background-color="#ffffff" padding="20px 30px">
+        <mj-column>
+          <mj-text font-size="24px" color="#333333" font-family="Helvetica, Arial, sans-serif" align="center">
+            Activate Your Account
+          </mj-text>
+          <mj-text font-size="16px" color="#555555" font-family="Helvetica, Arial, sans-serif" line-height="1.5" align="center">
+            Hi {{name}},
+          </mj-text>
+          <mj-text font-size="16px" color="#555555" font-family="Helvetica, Arial, sans-serif" line-height="1.5" align="center">
+            Welcome! You're just one step away from activating your account. Click the button below to verify your email and get started.
+          </mj-text>
+          <mj-button background-color="#28a745" color="#ffffff" font-family="Helvetica, Arial, sans-serif" font-size="16px" href="{{activationLink}}" align="center" padding="20px 0">
+            Activate Account
+          </mj-button>
+          <mj-text font-size="14px" color="#777777" font-family="Helvetica, Arial, sans-serif" line-height="1.5" align="center">
+            If you did not sign up for this account, please ignore this email.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+  
+      <!-- Footer Section -->
+      <mj-section background-color="#333333" padding="20px 30px">
+        <mj-column>
+          <mj-text font-size="12px" color="#ffffff" font-family="Helvetica, Arial, sans-serif" align="center">
+            &copy; 2024 Company Name. All rights reserved.
+          </mj-text>
+          <mj-text font-size="12px" color="#ffffff" font-family="Helvetica, Arial, sans-serif" align="center">
+            <a href="{{unsubscribeLink}}" style="color: #ffffff; text-decoration: none;">Unsubscribe</a>
+          </mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-body>
+  </mjml>
+  
