@@ -14,43 +14,54 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 oAuth2Client.setCredentials({ refresh_token: config.oAuth.refreshToken });
 
-// Function to create Nodemailer transporter
+
+let transporter;
+
 const createTransporter = async () => {
-  try {
-    const accessToken = await oAuth2Client.getAccessToken();
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: config.smtp.user,
-        clientId: config.oAuth.clientId,
-        clientSecret: config.oAuth.clientSecret,
-        refreshToken: config.oAuth.refreshToken,
-        accessToken: accessToken.token,
-      },
-    });
+  if (!transporter) {
+    try {
+      // Get OAuth access token once for all requests
+      const accessToken = await oAuth2Client.getAccessToken();
 
-    // Dynamically import nodemailer-express-handlebars
-    const nodemailerExpressHandlebars = await import("nodemailer-express-handlebars");
-
-    // Use handlebars for templating
-    transporter.use(
-      "compile",
-      nodemailerExpressHandlebars.default({
-        viewEngine: {
-          extname: ".hbs", // Template extension
-          partialsDir: path.resolve("./src/templates"), // Path to your templates folder
-          defaultLayout: false, // Disable layout support
+      // Create a pooled transporter
+      transporter = nodemailer.createTransport({
+        pool: true, // Use connection pooling
+        service: "gmail",
+        auth: {
+          type: "OAuth2",
+          user: config.smtp.user,
+          clientId: config.oAuth.clientId,
+          clientSecret: config.oAuth.clientSecret,
+          refreshToken: config.oAuth.refreshToken,
+          accessToken: accessToken.token,
         },
-        viewPath: path.resolve("./src/templates"), // Correct path to the templates folder
-      })
-    );
+        maxConnections: 5,  
+        maxMessages: 10,    
+      });
 
-    return transporter;
-  } catch (error) {
-    console.log(error);
-    throw new Error("Error creating transporter");
+      // Dynamically import nodemailer-express-handlebars
+      const nodemailerExpressHandlebars = await import("nodemailer-express-handlebars");
+
+      // Use handlebars for templating
+      transporter.use(
+        "compile",
+        nodemailerExpressHandlebars.default({
+          viewEngine: {
+            extname: ".hbs", // Template extension
+            partialsDir: path.resolve("./src/templates"), // Path to your templates folder
+            defaultLayout: false, // Disable layout support
+          },
+          viewPath: path.resolve("./src/templates"), // Correct path to the templates folder
+        })
+      );
+
+      logger.info("Transporter initialized with connection pooling.");
+    } catch (error) {
+      logger.error("Error creating transporter:", error);
+      throw new Error("Error creating transporter");
+    }
   }
+  return transporter;
 };
 
 // Function to send email
