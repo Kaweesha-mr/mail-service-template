@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "eureka-js-client": "^4.5.0",
     "express": "^4.21.2",
     "googleapis": "^144.0.0",
     "mjml": "^4.15.3",
