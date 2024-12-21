@@ -19,7 +19,7 @@
           <mj-text font-size="16px" color="#555555" font-family="Helvetica, Arial, sans-serif" line-height="1.5" align="center">
             Welcome! You're just one step away from activating your account. Click the button below to verify your email and get started.
           </mj-text>
-          <mj-button background-color="#28a745" color="#ffffff" font-family="Helvetica, Arial, sans-serif" font-size="16px" href="{{activationLink}}" align="center" padding="20px 0">
+          <mj-button background-color="#28a745" color="#ffffff" font-family="Helvetica, Arial, sans-serif" font-size="16px" href="http://{{activationLink}}" align="center" padding="20px 0">
             Activate Account
           </mj-button>
           <mj-text font-size="14px" color="#777777" font-family="Helvetica, Arial, sans-serif" line-height="1.5" align="center">
